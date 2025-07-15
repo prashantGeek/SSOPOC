@@ -35,7 +35,7 @@ export interface RegisterRequest {
     password: string;
     firstName: string;
     lastName: string;
-    organizationId: string;
+    organizationDomain: string;
 }  
 
 export interface AuthResponse {
