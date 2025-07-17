@@ -1,6 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedRequest } from '@/lib/middleware/auth';
 import { mockUsers, mockOrganizations } from '@/lib/passport';
+import { corsHeaders } from '@/lib/cors';
+
+// Handle CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders(),
+  });
+}
 
 async function handler(request: AuthenticatedRequest) {
   try {
@@ -12,7 +21,7 @@ async function handler(request: AuthenticatedRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders() }
       );
     }
 
@@ -28,13 +37,13 @@ async function handler(request: AuthenticatedRequest) {
         user: userProfile,
         organization: organization || null
       }
-    });
+    }, { headers: corsHeaders() });
 
   } catch (error) {
     console.error('Profile error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }

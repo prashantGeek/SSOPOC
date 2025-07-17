@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '../jwt';
 import { JWTPayload } from '@/types/auth';
+import { corsHeaders } from '../cors';
 
 export interface AuthenticatedRequest extends NextRequest {
   user: JWTPayload;
@@ -15,7 +16,7 @@ export function withAuth(handler: (request: AuthenticatedRequest) => Promise<Res
       if (!token) {
         return NextResponse.json(
           { success: false, message: 'Authentication token required' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders() }
         );
       }
 
@@ -24,7 +25,7 @@ export function withAuth(handler: (request: AuthenticatedRequest) => Promise<Res
       if (!payload) {
         return NextResponse.json(
           { success: false, message: 'Invalid or expired token' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders() }
         );
       }
 
@@ -37,7 +38,7 @@ export function withAuth(handler: (request: AuthenticatedRequest) => Promise<Res
       console.error('Authentication middleware error:', error);
       return NextResponse.json(
         { success: false, message: 'Authentication failed' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders() }
       );
     }
   };
@@ -52,7 +53,7 @@ export function withOrganizationAccess(
     if (!organizationId) {
       return NextResponse.json(
         { success: false, message: 'Organization access required' },
-        { status: 403 }
+        { status: 403, headers: corsHeaders() }
       );
     }
 
@@ -68,7 +69,7 @@ export function withRole(roles: string[]) {
       if (!roles.includes(role)) {
         return NextResponse.json(
           { success: false, message: 'Insufficient permissions' },
-          { status: 403 }
+          { status: 403, headers: corsHeaders() }
         );
       }
 

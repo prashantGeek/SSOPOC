@@ -3,6 +3,15 @@ import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { mockUsers, mockOrganizations } from '@/lib/passport';
 import { RegisterRequest, AuthResponse, User } from '@/types/auth';
+import { corsHeaders } from '@/lib/cors';
+
+// Handle CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders(),
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !firstName || !lastName || !organizationDomain) {
       return NextResponse.json(
         { success: false, message: 'All fields are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -22,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: 'User already exists with this email' },
-        { status: 409 }
+        { status: 409, headers: corsHeaders() }
       );
     }
 
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!organization) {
       return NextResponse.json(
         { success: false, message: 'Invalid organization domain' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -73,13 +82,16 @@ export async function POST(request: NextRequest) {
       message: 'Registration successful'
     };
 
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(response, { 
+      status: 201, 
+      headers: corsHeaders() 
+    });
 
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }

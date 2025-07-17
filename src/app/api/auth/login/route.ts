@@ -3,6 +3,15 @@ import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { mockUsers, mockOrganizations } from '@/lib/passport';
 import { LoginRequest, AuthResponse } from '@/types/auth';
+import { handleCors, corsHeaders } from '@/lib/cors';
+
+// Handle CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders(),
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: 'Email and password are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -23,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders() }
       );
     }
 
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (!isValidPassword) {
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders() }
       );
     }
 
@@ -41,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (!user.isActive) {
       return NextResponse.json(
         { success: false, message: 'Account is inactive' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders() }
       );
     }
 
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
       if (!organization || organization.domain !== organizationDomain) {
         return NextResponse.json(
           { success: false, message: 'Invalid organization domain' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders() }
         );
       }
     }
@@ -74,13 +83,16 @@ export async function POST(request: NextRequest) {
       message: 'Login successful'
     };
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { 
+      status: 200, 
+      headers: corsHeaders() 
+    });
 
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
